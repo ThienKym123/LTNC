@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product and Category Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.24/css/dataTables.bootstrap5.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.24/js/dataTables.bootstrap5.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            margin-top: 30px;
+            margin-bottom: 30px;
+        }
+
+        h1, h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+        }
+
+        .nav-tabs .nav-link {
+            color: var(--text-color);
+            border-radius: 5px 5px 0 0;
+        }
+
+        .nav-tabs .nav-link.active {
+            background-color: var(--primary-color);
+            color: white;
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        .btn-secondary:hover {
+            background-color: #27ae60;
+            border-color: #27ae60;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-danger:hover {
+            background-color: #c0392b;
+            border-color: #c0392b;
+        }
+
+        .action-btn {
+            margin-right: 5px;
+        }
+
+        .modal-header {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .filter-form {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .table {
+            background-color: white;
+        }
+
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .table-striped tbody tr:nth-of-type(odd) {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1 class="text-center mb-4">Product and Category Management</h1>
+    <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab" aria-controls="products" aria-selected="true">Products</button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="categories-tab" data-bs-toggle="tab" data-bs-target="#categories" type="button" role="tab" aria-controls="categories" aria-selected="false">Categories</button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myTabContent">
+        <div class="tab-pane fade show active" id="products" role="tabpanel" aria-labelledby="products-tab">
+            <h2 class="mb-3">Product Management</h2>
+            <button class="btn btn-primary mb-3" onclick="openModal('productModal')">Add New Product</button>
+
+            <form class="filter-form row g-3">
+                <div class="col-md-3">
+                    <input type="text" class="form-control" id="searchName" placeholder="Search by name">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control" id="minPrice" placeholder="Min price">
+                </div>
+                <div class="col-md-2">
+                    <input type="number" class="form-control" id="maxPrice" placeholder="Max price">
+                </div>
+                <div class="col-md-3">
+                    <select class="form-select" id="filterCategory">
+                        <option value="">All Categories</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="btn btn-secondary w-100" onclick="filterProducts()">Filter</button>
+                </div>
+            </form>
+
+            <div class="table-responsive">
+                <table id="productTable" class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Discount Price</th>
+                        <th>Description</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="productTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="tab-pane fade" id="categories" role="tabpanel" aria-labelledby="categories-tab">
+            <h2 class="mb-3">Category Management</h2>
+            <button class="btn btn-primary mb-3" onclick="openModal('categoryModal')">Add New Category</button>
+            <div class="table-responsive">
+                <table id="categoryTable" class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody id="categoryTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let products = [];
+    let categories = [];
+    let productTable;
+    let categoryTable;
+
+    $(document).ready(function() {
+        productTable = $('#productTable').DataTable({
+            columns: [
+                { data: 'id' },
+                { data: 'name' },
+                { data: 'price' },
+                { data: 'discountPrice' },
+                { data: 'description' },
+                { data: 'category.name' },
+                { data: 'status' },
+                {
+                    data: null,
+                    render: function(data, type, row) {
+                        return '<button class="btn btn-sm btn-primary action-btn" onclick="editProduct(' + row.id + ')">Edit</button>' +
+                               '<button class="btn btn-sm btn-danger action-btn" onclick="deleteProduct(' + row.id + ')">Delete</button>';
+                    }
+                }
+            ]
+        });
+
+        categoryTable = $('#categoryTable').DataTable({
+            columns: [
+                { data: 'id' },
+                { data: 'name' },
+                {
+                    data: null,
+                    render: function(data, type, row) {
+                        return '<button class="btn btn-sm btn-primary action-btn" onclick="editCategory(' + row.id + ')">Edit</button>' +
+                               '<button class="btn btn-sm btn-danger action-btn" onclick="deleteCategory(' + row.id + ')">Delete</button>';
+                    }
+                }
+            ]
+        });
+
+        fetchProducts();
+        fetchCategories();
+
+        $('#productForm').submit(function(e) {
+            e.preventDefault();
+            saveProduct();
+        });
+
+        $('#categoryForm').submit(function(e) {
+            e.preventDefault();
+            saveCategory();
+        });
+    });
+
+    function openModal(modalId) {
+        var modal = new bootstrap.Modal(document.getElementById(modalId));
+        modal.show();
+        if (modalId === 'productModal') {
+            populateCategoryDropdown();
+            $('#productModalTitle').text('Add New Product');
+            $('#productForm')[0].reset();
+            $('#productId').val('');
+        } else if (modalId === 'categoryModal') {
+            $('#categoryModalTitle').text('Add New Category');
+            $('#categoryForm')[0].reset();
+            $('#categoryId').val('');
+        }
+    }
+
+    function fetchProducts() {
+        $.ajax({
+            url: '/api/products',
+            method: 'GET',
+            success: function(data) {
+                products = data.content;
+                productTable.clear().rows.add(products).draw();
+            },
+            error: function(error) {
+                console.error('Error fetching products:', error);
+            }
+        });
+    }
+
+    function fetchCategories() {
+        $.ajax({
+            url: '/api/categories',
+            method: 'GET',
+            success: function(data) {
+                categories = data;
+                categoryTable.clear().rows.add(categories).draw();
+                populateCategoryDropdown();
+                populateCategoryFilter();
+            },
+            error: function(error) {
+                console.error('Error fetching categories:', error);
+            }
+        });
+    }
+
+    function populateCategoryDropdown() {
+        var dropdown = $('#productCategory');
+        dropdown.empty();
+        categories.forEach(function(category) {
+            dropdown.append($('<option></option>').attr('value', category.id).text(category.name));
+        });
+    }
+
+    function populateCategoryFilter() {
+        var dropdown = $('#filterCategory');
+        dropdown.empty();
+        dropdown.append($('<option></option>').attr('value', '').text('All Categories'));
+        categories.forEach(function(category) {
+            dropdown.append($('<option></option>').attr('value', category.id).text(category.name));
+        });
+    }
+
+    function saveProduct() {
+        var product = {
+            id: $('#productId').val() || null,
+            name: $('#productName').val(),
+            price: parseFloat($('#productPrice').val()),
+            discountPrice: parseFloat($('#productDiscountPrice').val()) || null,
+            image: $('#productImage').val(),
+            description: $('#productDescription').val(),
+            category: { id: parseInt($('#productCategory').val()) },
+            status: $('#productStatus').val()
+        };
+
+        var method = product.id ? 'PUT' : 'POST';
+        var url = '/api/products' + (product.id ? '/' + product.id : '');
+
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: 'application/json',
+            data: JSON.stringify(product),
+            success: function() {
+                $('#productModal').modal('hide');
+                fetchProducts();
+            },
+            error: function(error) {
+                console.error('Error saving product:', error);
+            }
+        });
+    }
+
+    function saveCategory() {
+        var category = {
+            id: $('#categoryId').val() || null,
+            name: $('#categoryName').val()
+        };
+
+        var method = category.id ? 'PUT' : 'POST';
+        var url = '/api/categories' + (category.id ? '/' + category.id : '');
+
+        $.ajax({
+            url: url,
+            method: method,
+            contentType: 'application/json',
+            data: JSON.stringify(category),
+            success: function() {
+                $('#categoryModal').modal('hide');
+                fetchCategories();
+            },
+            error: function(error) {
+                console.error('Error saving category:', error);
+            }
+        });
+    }
+
+    function editProduct(id) {
+        var product = products.find(p => p.id === id);
+        if (product) {
+            $('#productId').val(product.id);
+            $('#productName').val(product.name);
+            $('#productPrice').val(product.price);
+            $('#productDiscountPrice').val(product.discountPrice);
+            $('#productImage').val(product.image);
+            $('#productDescription').val(product.description);
+            $('#productCategory').val(product.category.id);
+            $('#productStatus').val(product.status);
+            $('#productModalTitle').text('Edit Product');
+            openModal('productModal');
+        }
+    }
+
+    function editCategory(id) {
+        var category = categories.find(c => c.id === id);
+        if (category) {
+            $('#categoryId').val(category.id);
+            $('#categoryName').val(category.name);
+            $('#categoryModalTitle').text('Edit Category');
+            openModal('categoryModal');
+        }
+    }
+
+    function deleteProduct(id) {
+        if (confirm('Are you sure you want to delete this product?')) {
+            $.ajax({
+                url: '/api/products/' + id,
+                method: 'DELETE',
+                success: function() {
+                    fetchProducts();
+                },
+                error: function(error) {
+                    console.error('Error deleting product:', error);
+                }
+            });
+        }
+    }
+
+    function deleteCategory(id) {
+        if (confirm('Are you sure you want to delete this category?')) {
+            $.ajax({
+                url: '/api/categories/' + id,
+                method: 'DELETE',
+                success: function() {
+                    fetchCategories();
+                },
+                error: function(error) {
+                    console.error('Error deleting category:', error);
+                }
+            });
+        }
+    }
+
+    function filterProducts() {
+        var searchName = $('#searchName').val().toLowerCase();
+        var minPrice = parseFloat($('#minPrice').val()) || 0;
+        var maxPrice = parseFloat($('#maxPrice').val()) || Infinity;
+        var categoryId = $('#filterCategory').val();
+
+        var filteredProducts = products.filter(function(product) {
+            var nameMatch = product.name.toLowerCase().includes(searchName);
+            var priceMatch = product.price >= minPrice && product.price <= maxPrice;
+            var categoryMatch = !categoryId || product.category.id == categoryId;
+            return nameMatch && priceMatch && categoryMatch;
+        });
+
+        productTable.clear().rows.add(filteredProducts).draw();
+    }
+</script>
+</body>
+</html>
